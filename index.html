@@ -64,15 +64,16 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
 #hist{display:none;padding:14px;max-width:560px;margin:0 auto}
 #hist .day{background:var(--card);border-radius:14px;padding:10px 12px;margin-bottom:10px}
 #hist .dh{font:600 14px 'Poppins',sans-serif;margin-bottom:6px}
-#hist .hr{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+#hist .hr{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
 #hist .hr:first-of-type{border-top:0}
-#hist .hn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hist .hn{flex:1;min-width:0;display:flex;align-items:center;gap:9px}
+#hist .hn span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #hist .hn i{font-style:normal;color:var(--mute);font-size:12px}
 #hist .hc{font:600 14px 'Poppins',sans-serif;min-width:64px;text-align:right}
 #hist .hd{font:600 12px 'Poppins',sans-serif;min-width:48px;text-align:right}
 #hist .note{font-size:12.5px;color:var(--mute);text-align:center;margin:4px 0 12px}
 .pi{height:20px;width:auto;vertical-align:-4px;margin-right:7px}
-.pi.sm{height:14px;margin:0 0 0 6px;vertical-align:-2px}
+.pi.sm{height:20px;width:28px;object-fit:contain;margin:0;flex:none;vertical-align:baseline}
 #welcome .pis{display:flex;gap:18px;justify-content:center;margin:-8px 0 24px}
 #welcome .pis img{width:auto;height:30px;border-radius:0;margin:0}
 .btn.out{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
@@ -306,7 +307,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     keys.forEach(function(k){
       var base=null;ds.slice().reverse().forEach(function(d){if(!base&&d>=lim&&d<latest&&typeof h[d][k]==='number')base=d});
       if(!base)return;any=true;
-      var r=el('div','hr'),n=el('div','hn',k.split('|')[1]+' ');n.appendChild(pic(k));
+      var r=el('div','hr'),n=el('div','hn');n.appendChild(pic(k));n.appendChild(el('span','',k.split('|')[1]));
       r.appendChild(n);r.appendChild(el('div','hc',fmt(h[latest][k])));
       var diff=h[latest][k]-h[base][k];r.appendChild(el('div','hd '+(diff>0?'up':diff<0?'down':'zero'),(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff))));
       sum.appendChild(r);
@@ -316,7 +317,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     ds.slice(0,60).forEach(function(d){
       var day=el('div','day');day.appendChild(el('div','dh',nice(d)+' '+d.slice(0,4)));
       Object.keys(h[d]).sort(function(a,b){return h[d][b]-h[d][a]}).forEach(function(k){
-        var r=el('div','hr'),n=el('div','hn',k.split('|')[1]+' ');n.appendChild(pic(k));
+        var r=el('div','hr'),n=el('div','hn');n.appendChild(pic(k));n.appendChild(el('span','',k.split('|')[1]));
         r.appendChild(n);r.appendChild(el('div','hc',fmt(h[d][k])));
         var pv=prevOf(h,k,d),hd=el('div','hd');
         if(pv){var diff=h[d][k]-pv.count;hd.className='hd '+(diff>0?'up':diff<0?'down':'zero');hd.textContent=(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff))}
