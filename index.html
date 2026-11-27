@@ -155,7 +155,12 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     function section(boxId,list,err){
       var box=$(boxId);box.textContent='';
       if(err){box.appendChild(el('div','err',err))}
-      (list||[]).forEach(function(x){
+      var L=(list||[]).slice().sort(function(p,q){
+        if(p.err||q.err)return (p.err?1:0)-(q.err?1:0);
+        var a=(typeof p.count==='number')?p.count:-1,b=(typeof q.count==='number')?q.count:-1;
+        return b-a;
+      });
+      L.forEach(function(x){
         if(x.err){box.appendChild(el('div','err',x.err));return}
         box.appendChild(row(x.name,x.sub,x.count,x.img));
       });
