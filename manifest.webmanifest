@@ -1,7 +1,7 @@
 {
   "name": "SP Followers",
   "short_name": "SP Followers",
-  "lang": "mr",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

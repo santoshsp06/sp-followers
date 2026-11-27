@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -62,17 +62,17 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
 <section id="welcome">
   <img src="logo.webp" alt="SP Informative">
   <h1>SP Followers</h1>
-  <div class="tag">तुमचे सगळे फॉलोअर्स, एकाच जागी</div>
-  <ul><li>• YouTube आणि Instagram एकत्र</li><li>• नावं आणि फोटो आपोआप</li><li>• Dark mode आणि रिफ्रेश</li></ul>
-  <button class="go" id="btnGo">सुरू करा</button>
+  <div class="tag">All your followers, in one place</div>
+  <ul><li>• YouTube, Instagram and Facebook together</li><li>• Names and photos load automatically</li><li>• Dark mode and one-tap refresh</li></ul>
+  <button class="go" id="btnGo">Get started</button>
   <div class="by">by SP Informative</div>
 </section>
 <div id="app">
 <header>
   <h1>SP Followers</h1>
   <div class="hbtns">
-    <button class="hbtn" id="btnTheme" aria-label="थीम">🌓</button>
-    <button class="hbtn" id="btnRefresh">रिफ्रेश</button>
+    <button class="hbtn" id="btnTheme" aria-label="Theme">🌓</button>
+    <button class="hbtn" id="btnRefresh">Refresh</button>
     <button class="hbtn" id="btnSet">⚙</button>
   </div>
 </header>
@@ -87,30 +87,30 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   <h2>Instagram</h2>
   <div id="ig"></div>
 
-  <h2>Facebook पेजेस</h2>
+  <h2>Facebook Pages</h2>
   <div id="fb"></div>
 </main>
 
 <section id="settings">
   <label for="ytKey">YouTube API key</label>
   <input id="ytKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza...">
-  <div class="hint">Google Cloud मधली key. फक्त या फोनमध्ये साठवली जाते.</div>
+  <div class="hint">Key from Google Cloud. Stored only on this phone.</div>
 
-  <label for="ytHandles">YouTube चॅनेल (handle)</label>
+  <label for="ytHandles">YouTube channels (handles)</label>
   <textarea id="ytHandles" rows="2" autocapitalize="off" spellcheck="false" placeholder="@channel1, @channel2"></textarea>
-  <div class="hint">दोन्ही चॅनेलचे @handle, स्वल्पविरामाने (,) वेगळे.</div>
+  <div class="hint">@handles of both channels, separated by commas.</div>
 
   <label for="igToken">Instagram / Facebook token</label>
   <input id="igToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="EAA...">
-  <div class="hint">Extended token (60 दिवसांचा).</div>
+  <div class="hint">Extended token (valid 60 days).</div>
 
-  <label for="igExp">Token ची शेवटची तारीख</label>
+  <label for="igExp">Token expiry date</label>
   <input id="igExp" type="date">
-  <div class="hint">Debugger मधली "Expires" तारीख. ॲप किती दिवस उरले ते दाखवेल.</div>
+  <div class="hint">The "Expires" date from the Debugger. The app shows days left.</div>
 
-  <button class="btn" id="btnSave">जतन करा</button>
-  <button class="btn sec" id="btnClear">सर्व साठवलेली माहिती पुसा</button>
-  <button class="btn" id="btnBack" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink)">मागे</button>
+  <button class="btn" id="btnSave">Save</button>
+  <button class="btn sec" id="btnClear">Erase all saved data</button>
+  <button class="btn" id="btnBack" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink)">Back</button>
 </section>
 </div>
 
@@ -143,13 +143,13 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
 
   async function loadYT(){
     var key=get('ytKey'),hs=get('ytHandles').split(',').map(function(s){return s.trim()}).filter(Boolean);
-    if(!key||!hs.length)throw new Error('YouTube key आणि handle Settings मध्ये भरा');
+    if(!key||!hs.length)throw new Error('Enter the YouTube key and handles in Settings');
     var out=[];
     for(var i=0;i<hs.length;i++){
       var h=hs[i].charAt(0)==='@'?hs[i]:'@'+hs[i];
       try{
         var j=await fetchJSON('https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle='+encodeURIComponent(h)+'&key='+encodeURIComponent(key));
-        if(!j.items||!j.items.length){out.push({err:h+': चॅनेल सापडलं नाही'});continue}
+        if(!j.items||!j.items.length){out.push({err:h+': channel not found'});continue}
         var c=j.items[0],hidden=c.statistics.hiddenSubscriberCount;
         out.push({name:c.snippet.title,sub:c.snippet.customUrl||h,count:hidden?null:parseInt(c.statistics.subscriberCount,10),img:(c.snippet.thumbnails&&(c.snippet.thumbnails.default||{}).url)||''});
       }catch(e){out.push({err:h+': '+e.message})}
@@ -157,7 +157,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     return out;
   }
   async function loadIG(){
-    var t=get('igToken');if(!t)throw new Error('Instagram token Settings मध्ये भरा');
+    var t=get('igToken');if(!t)throw new Error('Enter the Instagram token in Settings');
     var j=await fetchJSON(GRAPH+'me/accounts?limit=50&fields='+encodeURIComponent('name,instagram_business_account{username,name,followers_count,profile_picture_url}')+'&access_token='+encodeURIComponent(t));
     var out=[];(j.data||[]).forEach(function(p){var a=p.instagram_business_account;if(a)out.push({name:a.name||a.username,sub:'@'+a.username,count:a.followers_count,img:a.profile_picture_url||''})});
     return out;
@@ -181,19 +181,19 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
         if(x.err){box.appendChild(el('div','err',x.err));return}
         box.appendChild(row(x.name,x.sub,x.count,x.img));
       });
-      if(!err&&(!list||!list.length))box.appendChild(el('div','empty','काही दिसलं नाही'));
+      if(!err&&(!list||!list.length))box.appendChild(el('div','empty','Nothing to show'));
     }
     section('yt',d.yt,d.ytErr);section('ig',d.ig,d.igErr);section('fb',d.fb,d.fbErr);
-    $('meta').textContent=d.time?('शेवटचं अद्ययावत: '+new Date(d.time).toLocaleString('mr-IN')+(d.stale?' (जुनी माहिती)':'')):'';
+    $('meta').textContent=d.time?('Last updated: '+new Date(d.time).toLocaleString('en-IN')+(d.stale?' (old data)':'')):'';
   }
 
   function tokenInfo(){
     var box=$('tokenBox');box.textContent='';
     var e=get('igExp');if(!e){return}
     var days=Math.ceil((new Date(e+'T23:59:59')-new Date())/86400000);
-    if(days<0)box.appendChild(el('div','warn','Instagram token ची मुदत संपली आहे. नवा token घ्या (Settings मध्ये भरा).'));
-    else if(days<=10)box.appendChild(el('div','warn','Instagram token ची मुदत '+days+' दिवसांत संपेल. लवकर नवा token घ्या.'));
-    else box.appendChild(el('div','ok','Instagram token: '+days+' दिवस उरले'));
+    if(days<0)box.appendChild(el('div','warn','Instagram token has expired. Get a new token and enter it in Settings.'));
+    else if(days<=10)box.appendChild(el('div','warn','Instagram token expires in '+days+' days. Get a new token soon.'));
+    else box.appendChild(el('div','ok','Instagram token: '+days+' days left'));
   }
 
   function applyTheme(){
@@ -228,7 +228,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
       try{localStorage.setItem(K.cache,JSON.stringify(d))}catch(e){}
       render(d);
     }
-    btn.textContent='रिफ्रेश';busy=false;
+    btn.textContent='Refresh';busy=false;
   }
 
   function showSettings(on){
@@ -244,12 +244,12 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     showSettings(false);refresh();
   };
   $('btnClear').onclick=function(){
-    if(!confirm('सर्व साठवलेल्या key, token आणि माहिती पुसायची?'))return;
+    if(!confirm('Erase all saved keys, tokens and data?'))return;
     try{localStorage.clear()}catch(e){}
     showSettings(false);$('yt').textContent='';$('ig').textContent='';$('fb').textContent='';$('meta').textContent='';tokenInfo();
   };
 
-  // सुरुवात: जुनी माहिती लगेच दाखवा, मग रिफ्रेश
+  // Start: show old data first, then refresh
   var c0=null;try{c0=JSON.parse(localStorage.getItem(K.cache))}catch(e){}
   if(c0){c0.stale=true;render(c0)}
   function startApp(){ $('welcome').style.display='none';$('app').style.display='block'; if(!get('ytKey')&&!get('igToken')){showSettings(true)}else refresh(); }
