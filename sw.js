@@ -1,4 +1,4 @@
-const CACHE = 'spf-shell-v7';
+const CACHE = 'spf-shell-v8';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-any-192.png', 'icon-any-512.png', 'icon-mask-192.png', 'icon-mask-512.png', 'apple-touch-icon.png', 'logo.webp'];
 
 self.addEventListener('install', e => {

@@ -210,9 +210,9 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
   applyTheme();
 
-  var busy=false,lastRun=0;
+  var busy=false;
   async function refresh(){
-    if(busy)return;busy=true;lastRun=Date.now();
+    if(busy)return;busy=true;
     var btn=$('btnRefresh');btn.textContent='...';
     tokenInfo();
     var d={time:Date.now()};
@@ -256,12 +256,6 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   var seen='';try{seen=localStorage.getItem('spf_welcomed')||''}catch(e){}
   if(seen){startApp()}else{$('app').style.display='none';$('welcome').style.display='flex'}
   $('btnGo').onclick=function(){try{localStorage.setItem('spf_welcomed','1')}catch(e){};startApp()};
-  document.addEventListener('visibilitychange',function(){
-    if(document.visibilityState!=='visible'||busy)return;
-    if($('app').style.display==='none'||$('settings').style.display==='block')return;
-    if(!get('ytKey')&&!get('igToken'))return;
-    if(Date.now()-lastRun>5*60*1000)refresh();
-  });
   tokenInfo();
   if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
 })();
