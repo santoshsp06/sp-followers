@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14213D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SP Followers">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>SP Followers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#14213D;--gold:#E9B949;--beige:#F5EDE0;--card:#FAF6EC;--red:#D31B2F;--ink:#14213D;--mute:#6b6f7d}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Hind','Poppins',system-ui,sans-serif;background:var(--beige);color:var(--ink);min-height:100vh;padding-bottom:40px}
+header{background:var(--navy);color:var(--gold);padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header h1{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;letter-spacing:.3px}
+.hbtn{background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:10px;padding:7px 12px;font:600 14px 'Hind',sans-serif}
+.hbtn:active{background:rgba(233,185,73,.2)}
+.hbtns{display:flex;gap:8px}
+main{padding:14px;max-width:560px;margin:0 auto}
+.total{background:var(--navy);color:var(--beige);border-radius:18px;padding:18px;text-align:center;margin-bottom:6px}
+.total .lbl{font-size:14px;opacity:.85}
+.total .num{font-family:'Poppins',sans-serif;font-size:40px;font-weight:700;color:var(--gold);line-height:1.2}
+.total .sub{font-size:12.5px;opacity:.75;margin-top:2px}
+.meta{font-size:12.5px;color:var(--mute);text-align:center;margin:6px 0 4px}
+.warn{background:#fdeaea;border:1px solid var(--red);color:var(--red);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+.ok{background:#eef6e9;border:1px solid #6a9b4c;color:#3f6b27;border-radius:12px;padding:8px 12px;font-size:13px;margin:10px 0}
+h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;margin:18px 2px 8px;display:flex;justify-content:space-between;align-items:baseline}
+h2 small{font:500 13px 'Hind',sans-serif;color:var(--mute)}
+.row{background:var(--card);border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:12px;margin-bottom:8px;box-shadow:0 1px 0 rgba(20,33,61,.08)}
+.av{width:46px;height:46px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font:700 18px 'Poppins',sans-serif;overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.nm{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.un{font-size:12.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cnt{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;color:var(--navy)}
+.err{color:var(--red);font-size:13px;padding:2px 4px 8px}
+.empty{color:var(--mute);font-size:14px;padding:8px 4px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+#settings{display:none;padding:14px;max-width:560px;margin:0 auto}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 5px}
+input,textarea{width:100%;border:1.5px solid #cdbf9f;background:#fff;border-radius:10px;padding:11px;font:15px 'Hind',sans-serif;color:var(--ink)}
+.hint{font-size:12.5px;color:var(--mute);margin-top:4px}
+.btn{width:100%;background:var(--navy);color:var(--gold);border:0;border-radius:12px;padding:13px;font:600 16px 'Hind',sans-serif;margin-top:18px}
+.btn.sec{background:transparent;color:var(--red);border:1.5px solid var(--red);margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>SP Followers</h1>
+  <div class="hbtns">
+    <button class="hbtn" id="btnRefresh">रिफ्रेश</button>
+    <button class="hbtn" id="btnSet">⚙</button>
+  </div>
+</header>
+
+<main id="home">
+  <div class="total">
+    <div class="lbl">एकूण फॉलोअर्स (YouTube + Instagram)</div>
+    <div class="num" id="total">—</div>
+    <div class="sub" id="totalSub"></div>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div id="tokenBox"></div>
+
+  <h2>YouTube <small id="ytSum"></small></h2>
+  <div id="yt"></div>
+
+  <h2>Instagram <small id="igSum"></small></h2>
+  <div id="ig"></div>
+
+  <h2>Facebook पेजेस <small id="fbSum"></small></h2>
+  <div id="fb"></div>
+</main>
+
+<section id="settings">
+  <label for="ytKey">YouTube API key</label>
+  <input id="ytKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza...">
+  <div class="hint">Google Cloud मधली key. फक्त या फोनमध्ये साठवली जाते.</div>
+
+  <label for="ytHandles">YouTube चॅनेल (handle)</label>
+  <textarea id="ytHandles" rows="2" autocapitalize="off" spellcheck="false" placeholder="@channel1, @channel2"></textarea>
+  <div class="hint">दोन्ही चॅनेलचे @handle, स्वल्पविरामाने (,) वेगळे.</div>
+
+  <label for="igToken">Instagram / Facebook token</label>
+  <input id="igToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="EAA...">
+  <div class="hint">Extended token (60 दिवसांचा).</div>
+
+  <label for="igExp">Token ची शेवटची तारीख</label>
+  <input id="igExp" type="date">
+  <div class="hint">Debugger मधली "Expires" तारीख. ॲप किती दिवस उरले ते दाखवेल.</div>
+
+  <button class="btn" id="btnSave">जतन करा</button>
+  <button class="btn sec" id="btnClear">सर्व साठवलेली माहिती पुसा</button>
+  <button class="btn" id="btnBack" style="background:transparent;color:var(--navy);border:1.5px solid var(--navy)">मागे</button>
+</section>
+
+<script>
+(function(){
+  var GRAPH='https://graph.facebook.com/v27.0/';
+  var K={ytKey:'spf_ytKey',ytHandles:'spf_ytHandles',igToken:'spf_igToken',igExp:'spf_igExp',cache:'spf_cache'};
+  var $=function(id){return document.getElementById(id)};
+  function get(k){try{return localStorage.getItem(K[k])||''}catch(e){return ''}}
+  function set(k,v){try{localStorage.setItem(K[k],v)}catch(e){}}
+  function fmt(n){return (typeof n==='number')?n.toLocaleString('en-IN'):'—'}
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+
+  function row(name,sub,count,img){
+    var r=el('div','row');
+    var av=el('div','av');
+    if(img){var im=document.createElement('img');im.src=img;im.alt='';im.referrerPolicy='no-referrer';im.onerror=function(){im.remove();av.textContent=(name||'?').charAt(0).toUpperCase()};av.appendChild(im)}
+    else av.textContent=(name||'?').charAt(0).toUpperCase();
+    var info=el('div','info');info.appendChild(el('div','nm',name));info.appendChild(el('div','un',sub));
+    r.appendChild(av);r.appendChild(info);r.appendChild(el('div','cnt',fmt(count)));
+    return r;
+  }
+  function msg(box,cls,t){box.textContent='';box.appendChild(el('div',cls,t))}
+
+  async function fetchJSON(url){
+    var r=await fetch(url);var j=await r.json().catch(function(){return {}});
+    if(!r.ok||j.error){throw new Error((j.error&&j.error.message)||('HTTP '+r.status))}
+    return j;
+  }
+
+  async function loadYT(){
+    var key=get('ytKey'),hs=get('ytHandles').split(',').map(function(s){return s.trim()}).filter(Boolean);
+    if(!key||!hs.length)throw new Error('YouTube key आणि handle Settings मध्ये भरा');
+    var out=[];
+    for(var i=0;i<hs.length;i++){
+      var h=hs[i].charAt(0)==='@'?hs[i]:'@'+hs[i];
+      try{
+        var j=await fetchJSON('https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle='+encodeURIComponent(h)+'&key='+encodeURIComponent(key));
+        if(!j.items||!j.items.length){out.push({err:h+': चॅनेल सापडलं नाही'});continue}
+        var c=j.items[0],hidden=c.statistics.hiddenSubscriberCount;
+        out.push({name:c.snippet.title,sub:c.snippet.customUrl||h,count:hidden?null:parseInt(c.statistics.subscriberCount,10),img:(c.snippet.thumbnails&&(c.snippet.thumbnails.default||{}).url)||''});
+      }catch(e){out.push({err:h+': '+e.message})}
+    }
+    return out;
+  }
+  async function loadIG(){
+    var t=get('igToken');if(!t)throw new Error('Instagram token Settings मध्ये भरा');
+    var j=await fetchJSON(GRAPH+'me/accounts?limit=50&fields='+encodeURIComponent('name,instagram_business_account{username,name,followers_count,profile_picture_url}')+'&access_token='+encodeURIComponent(t));
+    var out=[];(j.data||[]).forEach(function(p){var a=p.instagram_business_account;if(a)out.push({name:a.name||a.username,sub:'@'+a.username,count:a.followers_count,img:a.profile_picture_url||''})});
+    return out;
+  }
+  async function loadFB(){
+    var t=get('igToken');if(!t)return [];
+    var j=await fetchJSON(GRAPH+'me/accounts?limit=50&fields='+encodeURIComponent('name,followers_count,fan_count,picture{url}')+'&access_token='+encodeURIComponent(t));
+    return (j.data||[]).map(function(p){return {name:p.name,sub:'Facebook Page',count:(typeof p.followers_count==='number'?p.followers_count:p.fan_count),img:(p.picture&&p.picture.data&&p.picture.data.url)||''}});
+  }
+
+  function render(d){
+    var sum=0;
+    function section(boxId,sumId,list,err){
+      var box=$(boxId);box.textContent='';var s=0;
+      if(err){box.appendChild(el('div','err',err))}
+      (list||[]).forEach(function(x){
+        if(x.err){box.appendChild(el('div','err',x.err));return}
+        box.appendChild(row(x.name,x.sub,x.count,x.img));if(typeof x.count==='number')s+=x.count;
+      });
+      if(!err&&(!list||!list.length))box.appendChild(el('div','empty','काही दिसलं नाही'));
+      $(sumId).textContent=(list&&list.length&&!err)?('एकूण '+fmt(s)):'';
+      return s;
+    }
+    var a=section('yt','ytSum',d.yt,d.ytErr),b=section('ig','igSum',d.ig,d.igErr);
+    section('fb','fbSum',d.fb,d.fbErr);
+    sum=a+b;$('total').textContent=fmt(sum);
+    $('totalSub').textContent='YouTube '+fmt(a)+' · Instagram '+fmt(b);
+    $('meta').textContent=d.time?('शेवटचं अद्ययावत: '+new Date(d.time).toLocaleString('mr-IN')+(d.stale?' (जुनी माहिती)':'')):'';
+  }
+
+  function tokenInfo(){
+    var box=$('tokenBox');box.textContent='';
+    var e=get('igExp');if(!e){return}
+    var days=Math.ceil((new Date(e+'T23:59:59')-new Date())/86400000);
+    if(days<0)box.appendChild(el('div','warn','Instagram token ची मुदत संपली आहे. नवा token घ्या (Settings मध्ये भरा).'));
+    else if(days<=10)box.appendChild(el('div','warn','Instagram token ची मुदत '+days+' दिवसांत संपेल. लवकर नवा token घ्या.'));
+    else box.appendChild(el('div','ok','Instagram token: '+days+' दिवस उरले'));
+  }
+
+  var busy=false;
+  async function refresh(){
+    if(busy)return;busy=true;
+    var btn=$('btnRefresh');btn.textContent='...';
+    tokenInfo();
+    var d={time:Date.now()};
+    var res=await Promise.allSettled([loadYT(),loadIG(),loadFB()]);
+    if(res[0].status==='fulfilled')d.yt=res[0].value;else d.ytErr=res[0].reason.message;
+    if(res[1].status==='fulfilled')d.ig=res[1].value;else d.igErr=res[1].reason.message;
+    if(res[2].status==='fulfilled')d.fb=res[2].value;else d.fbErr=null;
+    var allFail=!!d.ytErr&&!!d.igErr;
+    if(allFail){
+      var c=null;try{c=JSON.parse(localStorage.getItem(K.cache))}catch(e){}
+      if(c){c.stale=true;c.ytErr=d.ytErr;c.igErr=d.igErr;render(c)}else render(d);
+    }else{
+      try{localStorage.setItem(K.cache,JSON.stringify(d))}catch(e){}
+      render(d);
+    }
+    btn.textContent='रिफ्रेश';busy=false;
+  }
+
+  function showSettings(on){
+    $('settings').style.display=on?'block':'none';$('home').style.display=on?'none':'block';
+    if(on){$('ytKey').value=get('ytKey');$('ytHandles').value=get('ytHandles');$('igToken').value=get('igToken');$('igExp').value=get('igExp')}
+  }
+  $('btnSet').onclick=function(){showSettings(true)};
+  $('btnBack').onclick=function(){showSettings(false)};
+  $('btnRefresh').onclick=refresh;
+  $('btnSave').onclick=function(){
+    set('ytKey',$('ytKey').value.trim());set('ytHandles',$('ytHandles').value.trim());
+    set('igToken',$('igToken').value.trim());set('igExp',$('igExp').value);
+    showSettings(false);refresh();
+  };
+  $('btnClear').onclick=function(){
+    if(!confirm('सर्व साठवलेल्या key, token आणि माहिती पुसायची?'))return;
+    try{localStorage.clear()}catch(e){}
+    showSettings(false);$('yt').textContent='';$('ig').textContent='';$('fb').textContent='';$('total').textContent='—';$('totalSub').textContent='';$('meta').textContent='';tokenInfo();
+  };
+
+  // सुरुवात: जुनी माहिती लगेच दाखवा, मग रिफ्रेश
+  var c0=null;try{c0=JSON.parse(localStorage.getItem(K.cache))}catch(e){}
+  if(c0){c0.stale=true;render(c0)}
+  if(!get('ytKey')&&!get('igToken')){showSettings(true)}else refresh();
+  tokenInfo();
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+})();
+</script>
+</body>
+</html>
