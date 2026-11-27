@@ -56,6 +56,27 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
 .btn{width:100%;background:var(--navy);color:var(--gold);border:0;border-radius:12px;padding:13px;font:600 16px 'Hind',sans-serif;margin-top:18px}
 [data-theme=dark] .btn{background:var(--gold);color:var(--navy)}
 .btn.sec{background:transparent;color:var(--red);border:1.5px solid var(--red);margin-top:10px}
+.dl{font:600 12px 'Poppins',sans-serif;margin-top:2px;text-align:right}
+.dl small{display:block;font:400 11px 'Hind',sans-serif;color:var(--mute)}
+.up{color:#1f8f4e}.down{color:var(--red)}.zero{color:var(--mute)}
+[data-theme=dark] .up{color:#52C979}
+.cw{text-align:right;flex:none}
+#hist{display:none;padding:14px;max-width:560px;margin:0 auto}
+#hist .day{background:var(--card);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+#hist .dh{font:600 14px 'Poppins',sans-serif;margin-bottom:6px}
+#hist .hr{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+#hist .hr:first-of-type{border-top:0}
+#hist .hn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hist .hn i{font-style:normal;color:var(--mute);font-size:12px}
+#hist .hc{font:600 14px 'Poppins',sans-serif;min-width:64px;text-align:right}
+#hist .hd{font:600 12px 'Poppins',sans-serif;min-width:48px;text-align:right}
+#hist .note{font-size:12.5px;color:var(--mute);text-align:center;margin:4px 0 12px}
+.pi{height:20px;width:auto;vertical-align:-4px;margin-right:7px}
+.pi.sm{height:14px;margin:0 0 0 6px;vertical-align:-2px}
+#welcome .pis{display:flex;gap:18px;justify-content:center;margin:-8px 0 24px}
+#welcome .pis img{width:auto;height:30px;border-radius:0;margin:0}
+.btn.out{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+[data-theme=dark] .btn.out{background:transparent;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -63,6 +84,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   <img src="logo.webp" alt="SP Informative">
   <h1>SP Followers</h1>
   <div class="tag">All your followers, in one place</div>
+  <div class="pis"><img src="ic-yt.webp" alt="YouTube"><img src="ic-ig.webp" alt="Instagram"><img src="ic-fb.webp" alt="Facebook"></div>
   <ul><li>• YouTube, Instagram and Facebook together</li><li>• Names and photos load automatically</li><li>• Dark mode and one-tap refresh</li></ul>
   <button class="go" id="btnGo">Get started</button>
   <div class="by">by SP Informative</div>
@@ -72,6 +94,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   <h1>SP Followers</h1>
   <div class="hbtns">
     <button class="hbtn" id="btnTheme" aria-label="Theme">🌓</button>
+    <button class="hbtn" id="btnHist" aria-label="History">📈</button>
     <button class="hbtn" id="btnRefresh">Refresh</button>
     <button class="hbtn" id="btnSet">⚙</button>
   </div>
@@ -81,15 +104,17 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   <div class="meta" id="meta"></div>
   <div id="tokenBox"></div>
 
-  <h2>YouTube</h2>
+  <h2><span><img class="pi" src="ic-yt.webp" alt="">YouTube</span></h2>
   <div id="yt"></div>
 
-  <h2>Instagram</h2>
+  <h2><span><img class="pi" src="ic-ig.webp" alt="">Instagram</span></h2>
   <div id="ig"></div>
 
-  <h2>Facebook Pages</h2>
+  <h2><span><img class="pi" src="ic-fb.webp" alt="">Facebook Pages</span></h2>
   <div id="fb"></div>
 </main>
+
+<section id="hist"></section>
 
 <section id="settings">
   <label for="ytKey">YouTube API key</label>
@@ -109,7 +134,13 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   <div class="hint">The "Expires" date from the Debugger. The app shows days left.</div>
 
   <button class="btn" id="btnSave">Save</button>
-  <button class="btn sec" id="btnClear">Erase all saved data</button>
+  <label>History (daily follower counts)</label>
+  <div class="hint">Saved only on this phone. Export a backup file so you can restore it if the phone data is lost.</div>
+  <button class="btn out" id="btnExp">Export history</button>
+  <button class="btn out" id="btnImp" style="margin-top:10px">Import history</button>
+  <input type="file" id="fileImp" accept=".json,application/json" style="display:none">
+  <button class="btn sec" id="btnClearHist">Erase history only</button>
+  <button class="btn sec" id="btnClear">Erase keys and tokens (history is kept)</button>
   <button class="btn" id="btnBack" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink)">Back</button>
 </section>
 </div>
@@ -124,13 +155,43 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
   function fmt(n){return (typeof n==='number')?n.toLocaleString('en-IN'):'—'}
   function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
-  function row(name,sub,count,img){
+  // ---- Daily history (kept only on this phone) ----
+  var HK='spf_hist',MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function pad(n){return (n<10?'0':'')+n}
+  function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function today(){return dstr(new Date())}
+  function nice(ds){var a=ds.split('-');return parseInt(a[2],10)+' '+MON[parseInt(a[1],10)-1]}
+  function loadHist(){try{return JSON.parse(localStorage.getItem(HK))||{}}catch(e){return {}}}
+  function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
+  function recordHist(d){
+    var h=loadHist(),t=today();h[t]=h[t]||{};
+    [['yt',d.yt,d.ytErr],['ig',d.ig,d.igErr],['fb',d.fb,d.fbErr]].forEach(function(s){
+      if(s[2]||!s[1])return;
+      s[1].forEach(function(x){if(!x.err&&typeof x.count==='number')h[t][s[0]+'|'+x.name]=x.count});
+    });
+    var ds=Object.keys(h).sort();while(ds.length>400)delete h[ds.shift()];
+    saveHist(h);
+  }
+  function prevOf(h,key,before){
+    var ds=Object.keys(h).sort().reverse();
+    for(var i=0;i<ds.length;i++){if(ds[i]<before&&typeof h[ds[i]][key]==='number')return {date:ds[i],count:h[ds[i]][key]}}
+    return null;
+  }
+  function dEl(diff,cap){
+    var e=el('div','dl '+(diff>0?'up':diff<0?'down':'zero'),(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff)));
+    if(cap)e.appendChild(el('small','',cap));return e;
+  }
+
+  function row(name,sub,count,img,key){
     var r=el('div','row');
     var av=el('div','av');
     if(img){var im=document.createElement('img');im.src=img;im.alt='';im.referrerPolicy='no-referrer';im.onerror=function(){im.remove();av.textContent=(name||'?').charAt(0).toUpperCase()};av.appendChild(im)}
     else av.textContent=(name||'?').charAt(0).toUpperCase();
     var info=el('div','info');info.appendChild(el('div','nm',name));info.appendChild(el('div','un',sub));
-    r.appendChild(av);r.appendChild(info);r.appendChild(el('div','cnt',fmt(count)));
+    r.appendChild(av);r.appendChild(info);
+    var cw=el('div','cw');cw.appendChild(el('div','cnt',fmt(count)));
+    if(key&&typeof count==='number'){var pv=prevOf(loadHist(),key,today());if(pv)cw.appendChild(dEl(count-pv.count,'since '+nice(pv.date)))}
+    r.appendChild(cw);
     return r;
   }
   function msg(box,cls,t){box.textContent='';box.appendChild(el('div',cls,t))}
@@ -179,7 +240,7 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
       });
       L.forEach(function(x){
         if(x.err){box.appendChild(el('div','err',x.err));return}
-        box.appendChild(row(x.name,x.sub,x.count,x.img));
+        box.appendChild(row(x.name,x.sub,x.count,x.img,boxId+'|'+x.name));
       });
       if(!err&&(!list||!list.length))box.appendChild(el('div','empty','Nothing to show'));
     }
@@ -226,13 +287,80 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
       if(c){c.stale=true;c.ytErr=d.ytErr;c.igErr=d.igErr;render(c)}else render(d);
     }else{
       try{localStorage.setItem(K.cache,JSON.stringify(d))}catch(e){}
-      render(d);
+      recordHist(d);render(d);
     }
     btn.textContent='Refresh';busy=false;
   }
 
+  var PL={yt:'ic-yt.webp',ig:'ic-ig.webp',fb:'ic-fb.webp'};
+  function pic(k){var i=document.createElement('img');i.className='pi sm';i.alt='';i.src=PL[k.split('|')[0]];return i}
+  function buildHist(){
+    var box=$('hist');box.textContent='';
+    var h=loadHist(),ds=Object.keys(h).sort().reverse();
+    if(!ds.length){box.appendChild(el('div','empty','No history yet. A day is saved every time you refresh.'));return}
+    box.appendChild(el('div','note','Saved on this phone only. One entry per day (the last refresh of that day).'));
+    // last 7 days summary
+    var latest=ds[0],keys=Object.keys(h[latest]),ref=null;
+    var d7=new Date(latest+'T00:00:00');d7.setDate(d7.getDate()-7);var lim=dstr(d7);
+    var sum=el('div','day');sum.appendChild(el('div','dh','Last 7 days'));var any=false;
+    keys.forEach(function(k){
+      var base=null;ds.slice().reverse().forEach(function(d){if(!base&&d>=lim&&d<latest&&typeof h[d][k]==='number')base=d});
+      if(!base)return;any=true;
+      var r=el('div','hr'),n=el('div','hn',k.split('|')[1]+' ');n.appendChild(pic(k));
+      r.appendChild(n);r.appendChild(el('div','hc',fmt(h[latest][k])));
+      var diff=h[latest][k]-h[base][k];r.appendChild(el('div','hd '+(diff>0?'up':diff<0?'down':'zero'),(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff))));
+      sum.appendChild(r);
+    });
+    if(!any)sum.appendChild(el('div','empty','Needs at least 2 days of data.'));
+    box.appendChild(sum);
+    ds.slice(0,60).forEach(function(d){
+      var day=el('div','day');day.appendChild(el('div','dh',nice(d)+' '+d.slice(0,4)));
+      Object.keys(h[d]).sort(function(a,b){return h[d][b]-h[d][a]}).forEach(function(k){
+        var r=el('div','hr'),n=el('div','hn',k.split('|')[1]+' ');n.appendChild(pic(k));
+        r.appendChild(n);r.appendChild(el('div','hc',fmt(h[d][k])));
+        var pv=prevOf(h,k,d),hd=el('div','hd');
+        if(pv){var diff=h[d][k]-pv.count;hd.className='hd '+(diff>0?'up':diff<0?'down':'zero');hd.textContent=(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff))}
+        r.appendChild(hd);day.appendChild(r);
+      });
+      box.appendChild(day);
+    });
+  }
+  function showHist(on){
+    $('hist').style.display=on?'block':'none';$('home').style.display=on?'none':'block';$('settings').style.display='none';
+    if(on){buildHist();$('btnHist').textContent='✕'}else $('btnHist').textContent='📈';
+  }
+  $('btnClearHist').onclick=function(){
+    if(!confirm('Erase the whole daily history? This cannot be undone.'))return;
+    try{localStorage.removeItem(HK)}catch(e){}
+    alert('History erased.');
+  };
+  $('btnExp').onclick=async function(){
+    var h=loadHist();if(!Object.keys(h).length){alert('No history to export yet.');return}
+    var txt=JSON.stringify({app:'sp-followers',v:1,hist:h}),name='sp-followers-history-'+today()+'.json';
+    try{
+      var f=new File([txt],name,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return}
+    }catch(e){if(e&&e.name==='AbortError')return}
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+  };
+  $('btnImp').onclick=function(){$('fileImp').click()};
+  $('fileImp').onchange=function(){
+    var f=this.files&&this.files[0];if(!f)return;var inp=this;
+    var r=new FileReader();r.onload=function(){
+      try{
+        var o=JSON.parse(r.result),inc=o&&o.hist;if(!inc||typeof inc!=='object')throw 0;
+        var h=loadHist(),add=0;
+        Object.keys(inc).forEach(function(d){if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||typeof inc[d]!=='object')return;h[d]=h[d]||{};
+          Object.keys(inc[d]).forEach(function(k){if(typeof inc[d][k]==='number'&&typeof h[d][k]!=='number'){h[d][k]=inc[d][k];add++}})});
+        saveHist(h);alert('Imported. '+add+' new entries added.');
+      }catch(e){alert('This file is not a valid history file.')}
+      inp.value='';
+    };r.readAsText(f);
+  };
+  $('btnHist').onclick=function(){showHist($('hist').style.display!=='block')};
   function showSettings(on){
-    $('settings').style.display=on?'block':'none';$('home').style.display=on?'none':'block';
+    $('settings').style.display=on?'block':'none';$('home').style.display=on?'none':'block';$('hist').style.display='none';$('btnHist').textContent='📈';
     if(on){$('ytKey').value=get('ytKey');$('ytHandles').value=get('ytHandles');$('igToken').value=get('igToken');$('igExp').value=get('igExp')}
   }
   $('btnSet').onclick=function(){showSettings(true)};
@@ -244,8 +372,8 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
     showSettings(false);refresh();
   };
   $('btnClear').onclick=function(){
-    if(!confirm('Erase all saved keys, tokens and data?'))return;
-    try{localStorage.clear()}catch(e){}
+    if(!confirm('Erase saved keys, tokens and data? Your history will be kept.'))return;
+    var hs=null;try{hs=localStorage.getItem(HK);localStorage.clear();if(hs)localStorage.setItem(HK,hs)}catch(e){}
     showSettings(false);$('yt').textContent='';$('ig').textContent='';$('fb').textContent='';$('meta').textContent='';tokenInfo();
   };
 

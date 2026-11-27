@@ -1,5 +1,5 @@
-const CACHE = 'spf-shell-v8';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-any-192.png', 'icon-any-512.png', 'icon-mask-192.png', 'icon-mask-512.png', 'apple-touch-icon.png', 'logo.webp'];
+const CACHE = 'spf-shell-v9';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-any-192.png', 'icon-any-512.png', 'icon-mask-192.png', 'icon-mask-512.png', 'apple-touch-icon.png', 'logo.webp', 'ic-yt.webp', 'ic-ig.webp', 'ic-fb.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
