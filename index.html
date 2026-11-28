@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#14213D">
 <script>try{var m=localStorage.getItem("spf_theme")||"auto";document.documentElement.dataset.theme=m==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):m}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,7 +51,7 @@ h2 small{font:500 13px 'Hind',sans-serif;color:var(--mute)}
 #welcome .by{font-size:12px;color:#9B9BA3;margin-top:16px}
 #settings{display:none;padding:14px;max-width:560px;margin:0 auto}
 label{display:block;font-weight:600;font-size:14px;margin:14px 0 5px}
-input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);border-radius:10px;padding:11px;font:15px 'Hind',sans-serif;color:var(--ink)}
+input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);border-radius:10px;padding:11px;font:16px 'Hind',sans-serif;color:var(--ink)}
 .hint{font-size:12.5px;color:var(--mute);margin-top:4px}
 .btn{width:100%;background:var(--navy);color:var(--gold);border:0;border-radius:12px;padding:13px;font:600 16px 'Hind',sans-serif;margin-top:18px}
 [data-theme=dark] .btn{background:var(--gold);color:var(--navy)}
@@ -82,15 +82,15 @@ input,textarea{width:100%;border:1.5px solid var(--line);background:var(--inp);b
 .btn.out{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 [data-theme=dark] .btn.out{background:transparent;color:var(--ink)}
 html,body{overscroll-behavior-y:contain}
-input,textarea,select{width:100%;border:1.5px solid var(--line);background:var(--inp);border-radius:10px;padding:11px;font:15px 'Hind',sans-serif;color:var(--ink)}
+input,textarea,select{width:100%;border:1.5px solid var(--line);background:var(--inp);border-radius:10px;padding:11px;font:16px 'Hind',sans-serif;color:var(--ink)}
 #ptr{height:0;overflow:hidden;text-align:center;font-size:12.5px;color:var(--mute);transition:height .15s;line-height:34px}
 .row{cursor:pointer}.row.dim{opacity:.5}
 .hidbar{text-align:center;margin:14px 0 4px}
 .hidbar button{background:none;border:0;color:var(--mute);font:500 13px 'Hind',sans-serif;text-decoration:underline;cursor:pointer}
 #sheet{display:none;position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.5);z-index:50}
-#sheet .sh{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:92vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
-.sh .top{display:flex;align-items:center;gap:12px}
-.sh .x{background:none;border:0;font-size:22px;color:var(--mute);padding:4px 8px}
+#sheet .sh{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:92vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--bg);border-radius:20px 20px 0 0;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
+.sh .top{display:flex;align-items:center;gap:12px;position:sticky;top:-16px;z-index:3;background:var(--bg);margin:-16px -16px 0;padding:16px 16px 8px}
+.sh .x{background:none;border:0;font-size:26px;line-height:1;color:var(--ink);padding:10px 12px;flex:none}
 .sh .big{font:700 32px 'Poppins',sans-serif;margin-top:12px}
 .sh .sec{background:var(--card);border-radius:14px;padding:12px;margin-top:12px}
 .sh .st{font:600 13px 'Poppins',sans-serif;margin-bottom:8px}
@@ -376,7 +376,11 @@ a.btn{display:block;text-align:center;text-decoration:none}
     pts.forEach(function(p){mk('circle',{cx:X(p.d).toFixed(1),cy:Y(p.c).toFixed(1),r:3,'class':'pt'})});
     return svg;
   }
-  function closeSheet(){$('sheet').style.display='none'}
+  var lockY=0;
+  function lockBody(){if(document.body.style.position==='fixed')return;lockY=window.pageYOffset||0;var b=document.body;b.style.position='fixed';b.style.top=(-lockY)+'px';b.style.left='0';b.style.right='0'}
+  function unlockBody(){var b=document.body;if(b.style.position!=='fixed')return;b.style.position='';b.style.top='';b.style.left='';b.style.right='';window.scrollTo(0,lockY)}
+  function closeSheet(){$('sheet').style.display='none';unlockBody()}
+  document.addEventListener('gesturestart',function(e){e.preventDefault()});
   $('sheet').onclick=function(e){if(e.target===$('sheet'))closeSheet()};
   function openSheet(x,key){
     var box=$('shbody');box.textContent='';var h=loadHist();
@@ -425,7 +429,7 @@ a.btn{display:block;text-align:center;text-decoration:none}
     var hb=el('button','btn out',isH?'Show on home':'Hide from home');hb.style.marginTop='10px';
     hb.onclick=function(){var H=jget(HDK,[]),i=H.indexOf(key);if(i>=0)H.splice(i,1);else H.push(key);jset(HDK,H);render(lastD||{});closeSheet()};
     box.appendChild(hb);
-    $('sheet').style.display='block';
+    $('sheet').style.display='block';lockBody();
   }
 
   var PL={yt:'ic-yt.webp',ig:'ic-ig.webp',fb:'ic-fb.webp'};
