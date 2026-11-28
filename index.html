@@ -90,6 +90,7 @@ input,textarea,select{width:100%;border:1.5px solid var(--line);background:var(-
 #sheet{display:none;position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.5);z-index:50}
 #sheet .sh{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:92vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--bg);border-radius:20px 20px 0 0;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
 .sh .top{display:flex;align-items:center;gap:12px;position:sticky;top:-16px;z-index:3;background:var(--bg);margin:-16px -16px 0;padding:16px 16px 8px}
+.sh .ge{font-size:20px;padding:10px 6px}
 .sh .x{background:none;border:0;font-size:26px;line-height:1;color:var(--ink);padding:10px 12px;flex:none}
 .sh .big{font:700 32px 'Poppins',sans-serif;margin-top:12px}
 .sh .sec{background:var(--card);border-radius:14px;padding:12px;margin-top:12px}
@@ -388,7 +389,8 @@ a.btn{display:block;text-align:center;text-decoration:none}
     if(x.img){var im=document.createElement('img');im.src=x.img;im.alt='';im.referrerPolicy='no-referrer';im.onerror=function(){im.remove();av.textContent=(x.name||'?').charAt(0).toUpperCase()};av.appendChild(im)}else av.textContent=(x.name||'?').charAt(0).toUpperCase();
     var inf=el('div','info');inf.appendChild(el('div','nm',x.name));inf.appendChild(el('div','un',x.sub||''));
     var xb=el('button','x','✕');xb.onclick=closeSheet;
-    top.appendChild(av);top.appendChild(inf);top.appendChild(pic(key));top.appendChild(xb);box.appendChild(top);
+    var ge=el('button','x ge','🎯');ge.setAttribute('aria-label','Set goal');
+    top.appendChild(av);top.appendChild(inf);top.appendChild(pic(key));top.appendChild(ge);top.appendChild(xb);box.appendChild(top);
     box.appendChild(el('div','big',fmt(x.count)));
     var pv=(typeof x.count==='number')?prevOf(h,key,today()):null;
     if(pv){var df=x.count-pv.count;box.appendChild(el('div','sm',(df>0?'+':df<0?'−':'')+fmt(Math.abs(df))+' since '+nice(pv.date)))}
@@ -413,6 +415,8 @@ a.btn{display:block;text-align:center;text-decoration:none}
     var gb=el('button','mini','Save');
     gb.onclick=function(){var v=parseInt(gin.value,10),G=jget(GK,{});if(v>0)G[key]=v;else delete G[key];jset(GK,G);openSheet(x,key)};
     gi.appendChild(gin);gi.appendChild(gb);gs.appendChild(gi);gs.appendChild(el('div','sm','Leave empty for the automatic next milestone.'));box.appendChild(gs);
+    gs.style.display='none';
+    ge.onclick=function(){var open=gs.style.display==='none';gs.style.display=open?'block':'none';if(open){gs.scrollIntoView({block:'nearest'});gin.focus()}};
     // chart
     var c=el('div','sec');c.appendChild(el('div','st','Growth'));
     var seg=el('div','seg'),holder=el('div');
