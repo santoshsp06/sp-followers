@@ -115,9 +115,6 @@ a.btn{display:block;text-align:center;text-decoration:none}
 #hist .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 #hist .ph .seg{width:150px}
 #hist .tgn{font-size:13px;color:var(--mute);margin:8px 0 2px}
-.manrow{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}
-.manrow span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.manrow button{background:none;border:0;color:var(--red);font:600 13px 'Hind',sans-serif}
 #settings select,#settings input.m{margin-top:8px}
 </style>
 </head>
@@ -180,14 +177,6 @@ a.btn{display:block;text-align:center;text-decoration:none}
   <div class="hint">The "Expires" date from the Debugger. The app shows days left.</div>
 
   <button class="btn" id="btnSave">Save</button>
-  <label>Manual accounts</label>
-  <div class="hint">For profiles Meta does not share (for example a personal Facebook profile). You update the number yourself.</div>
-  <div id="manList"></div>
-  <select id="manP"><option value="fb">Facebook</option><option value="ig">Instagram</option><option value="yt">YouTube</option></select>
-  <input class="m" id="manName" placeholder="Name (e.g. SP Santosh Pujari)" autocomplete="off">
-  <input class="m" id="manCnt" type="number" inputmode="numeric" placeholder="Followers now">
-  <button class="btn out" id="btnManAdd">Add manual account</button>
-
   <label>History (daily follower counts)</label>
   <div class="hint">Saved only on this phone. Export a backup file so you can restore it if the phone data is lost.</div>
   <button class="btn out" id="btnExp">Export history</button>
@@ -215,6 +204,8 @@ a.btn{display:block;text-align:center;text-decoration:none}
 
   // ---- Daily history (kept only on this phone) ----
   var HK='spf_hist',MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // one-time cleanup: manual accounts were removed
+  (function(){var m=jget(MK,[]);if(m.length){var h=jget(HK,{});Object.keys(h).forEach(function(d){m.forEach(function(a){delete h[d][a.p+'|'+a.name]})});jset(HK,h)}try{localStorage.removeItem(MK)}catch(e){}})();
   function pad(n){return (n<10?'0':'')+n}
   function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
   function today(){return dstr(new Date())}
@@ -227,7 +218,6 @@ a.btn{display:block;text-align:center;text-decoration:none}
       if(s[2]||!s[1])return;
       s[1].forEach(function(x){if(!x.err&&typeof x.count==='number')h[t][s[0]+'|'+x.name]=x.count});
     });
-    jget(MK,[]).forEach(function(m){if(typeof m.count==='number')h[t][m.p+'|'+m.name]=m.count});
     var ds=Object.keys(h).sort();while(ds.length>400)delete h[ds.shift()];
     saveHist(h);
   }
@@ -291,10 +281,10 @@ a.btn{display:block;text-align:center;text-decoration:none}
 
   function render(d){
     lastD=d;
-    var man=jget(MK,[]),hid=jget(HDK,[]),nHid=0;
+    var hid=jget(HDK,[]),nHid=0;
     function section(boxId,list0,err){
       var box=$(boxId);box.textContent='';
-      var list=(list0||[]).concat(man.filter(function(m){return m.p===boxId}).map(function(m){return {name:m.name,sub:'Manual entry',count:m.count,img:'',manual:true,mid:m.id}}));
+      var list=(list0||[]).slice();
       if(err){box.appendChild(el('div','err',err))}
       var L=list.slice().sort(function(p,q){
         if(p.err||q.err)return (p.err?1:0)-(q.err?1:0);
@@ -429,21 +419,12 @@ a.btn{display:block;text-align:center;text-decoration:none}
     }
     [7,30,90].forEach(function(d){var b=el('button','',d+' days');b.dataset.d=d;b.onclick=function(){draw(d)};seg.appendChild(b)});
     c.appendChild(seg);c.appendChild(holder);box.appendChild(c);draw(30);
-    // manual: update count
-    if(x.manual){
-      var m=el('div','sec');m.appendChild(el('div','st','Update followers'));
-      var mi=el('div','inl'),mn=document.createElement('input');mn.type='number';mn.inputMode='numeric';mn.value=x.count;
-      var mb=el('button','mini','Save');
-      mb.onclick=function(){var v=parseInt(mn.value,10);if(!(v>=0))return;var L=jget(MK,[]);L.forEach(function(q){if(q.id===x.mid)q.count=v});jset(MK,L);recordHist({});render(lastD||{});closeSheet()};
-      mi.appendChild(mn);mi.appendChild(mb);m.appendChild(mi);box.appendChild(m);
-    }
     // actions
     if(x.url){var a=el('a','btn out','Open profile');a.href=x.url;a.target='_blank';a.rel='noopener';box.appendChild(a)}
     var hid=jget(HDK,[]),isH=hid.indexOf(key)>=0;
     var hb=el('button','btn out',isH?'Show on home':'Hide from home');hb.style.marginTop='10px';
     hb.onclick=function(){var H=jget(HDK,[]),i=H.indexOf(key);if(i>=0)H.splice(i,1);else H.push(key);jset(HDK,H);render(lastD||{});closeSheet()};
     box.appendChild(hb);
-    if(x.manual){var db=el('button','btn sec','Delete this manual account');db.onclick=function(){if(!confirm('Delete this manual account? Its saved history stays.'))return;jset(MK,jget(MK,[]).filter(function(q){return q.id!==x.mid}));render(lastD||{});closeSheet()};box.appendChild(db)}
     $('sheet').style.display='block';
   }
 
@@ -534,7 +515,7 @@ a.btn{display:block;text-align:center;text-decoration:none}
   };
   $('btnExp').onclick=async function(){
     var h=loadHist();if(!Object.keys(h).length){alert('No history to export yet.');return}
-    var txt=JSON.stringify({app:'sp-followers',v:2,hist:h,goals:jget(GK,{}),hidden:jget(HDK,[]),manual:jget(MK,[])}),name='sp-followers-history-'+today()+'.json';
+    var txt=JSON.stringify({app:'sp-followers',v:2,hist:h,goals:jget(GK,{}),hidden:jget(HDK,[])}),name='sp-followers-history-'+today()+'.json';
     try{
       var f=new File([txt],name,{type:'application/json'});
       if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return}
@@ -554,7 +535,6 @@ a.btn{display:block;text-align:center;text-decoration:none}
         saveHist(h);
         var G=jget(GK,{});if(o.goals&&typeof o.goals==='object')Object.keys(o.goals).forEach(function(k){if(!(k in G)&&o.goals[k]>0)G[k]=o.goals[k]});jset(GK,G);
         var HD=jget(HDK,[]);if(Array.isArray(o.hidden))o.hidden.forEach(function(k){if(typeof k==='string'&&HD.indexOf(k)<0)HD.push(k)});jset(HDK,HD);
-        var ML=jget(MK,[]);if(Array.isArray(o.manual))o.manual.forEach(function(m){if(m&&m.name&&typeof m.count==='number'&&!ML.some(function(q){return q.p===m.p&&q.name===m.name}))ML.push({id:String(m.id||Date.now()+Math.random()),p:m.p,name:m.name,count:m.count})});jset(MK,ML);
         render(lastD||{});alert('Imported. '+add+' new history entries added.');
       }catch(e){alert('This file is not a valid history file.')}
       inp.value='';
@@ -563,24 +543,8 @@ a.btn{display:block;text-align:center;text-decoration:none}
   $('btnHist').onclick=function(){showHist($('hist').style.display!=='block')};
   function showSettings(on){
     $('settings').style.display=on?'block':'none';$('home').style.display=on?'none':'block';$('hist').style.display='none';$('btnHist').textContent='📈';
-    if(on){renderMan();$('ytKey').value=get('ytKey');$('ytHandles').value=get('ytHandles');$('igToken').value=get('igToken');$('igExp').value=get('igExp')}
+    if(on){$('ytKey').value=get('ytKey');$('ytHandles').value=get('ytHandles');$('igToken').value=get('igToken');$('igExp').value=get('igExp')}
   }
-  function renderMan(){
-    var box=$('manList');box.textContent='';var L=jget(MK,[]);
-    L.forEach(function(m){
-      var r=el('div','manrow');r.appendChild(pic(m.p+'|'));r.appendChild(el('span','',m.name+' · '+fmt(m.count)));
-      var d=el('button','','Delete');d.onclick=function(){if(!confirm('Delete this manual account? Its saved history stays.'))return;jset(MK,jget(MK,[]).filter(function(q){return q.id!==m.id}));renderMan();render(lastD||{})};
-      r.appendChild(d);box.appendChild(r);
-    });
-  }
-  $('btnManAdd').onclick=function(){
-    var n=$('manName').value.trim(),c=parseInt($('manCnt').value,10),pl=$('manP').value;
-    if(!n||!(c>=0)){alert('Enter a name and the number of followers.');return}
-    var L=jget(MK,[]);
-    if(L.some(function(q){return q.p===pl&&q.name===n})){alert('A manual account with this name already exists on that platform.');return}
-    L.push({id:String(Date.now()),p:pl,name:n,count:c});jset(MK,L);
-    $('manName').value='';$('manCnt').value='';recordHist({});renderMan();render(lastD||{});
-  };
   $('btnSet').onclick=function(){showSettings(true)};
   $('btnBack').onclick=function(){showSettings(false)};
   $('btnRefresh').onclick=refresh;
@@ -590,14 +554,14 @@ a.btn{display:block;text-align:center;text-decoration:none}
     showSettings(false);refresh();
   };
   $('btnClear').onclick=function(){
-    if(!confirm('Erase saved keys and tokens? Your history, goals, hidden and manual accounts will be kept.'))return;
-    var keep=[HK,GK,HDK,MK].map(function(k){var v=null;try{v=localStorage.getItem(k)}catch(e){}return [k,v]});try{localStorage.clear();keep.forEach(function(p){if(p[1])localStorage.setItem(p[0],p[1])})}catch(e){}
+    if(!confirm('Erase saved keys and tokens? Your history, goals and hidden accounts will be kept.'))return;
+    var keep=[HK,GK,HDK].map(function(k){var v=null;try{v=localStorage.getItem(k)}catch(e){}return [k,v]});try{localStorage.clear();keep.forEach(function(p){if(p[1])localStorage.setItem(p[0],p[1])})}catch(e){}
     showSettings(false);lastD=null;render({});tokenInfo();
   };
 
   // Start: show old data first, then refresh
   var c0=null;try{c0=JSON.parse(localStorage.getItem(K.cache))}catch(e){}
-  if(c0){c0.stale=true;render(c0)}else if(jget(MK,[]).length){render({})}
+  if(c0){c0.stale=true;render(c0)}
   function startApp(){ $('welcome').style.display='none';$('app').style.display='block'; if(!get('ytKey')&&!get('igToken')){showSettings(true)}else refresh(); }
   var seen='';try{seen=localStorage.getItem('spf_welcomed')||''}catch(e){}
   if(seen){startApp()}else{$('app').style.display='none';$('welcome').style.display='flex'}
